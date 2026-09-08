@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wildfury Attack Modifier Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg:#151311; --panel:#27231f; --panel2:#201d1a; --line:#4a423a;
+      --ink:#f2e8d7; --muted:#b7aa98; --gold:#d7ad59; --rust:#bd5c45;
+      --green:#77966f; --air:#83bed0; --earth:#89a768;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(circle at 8% 0%,rgb(189 92 69 / 17%),transparent 34rem),linear-gradient(135deg,#141210,#211e1b 60%,#151311); font:15px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+    button,input { font:inherit; }
+    button { color:var(--ink); cursor:pointer; }
+    .shell { width:min(1180px,calc(100% - 28px)); margin:auto; padding:38px 0 64px; }
+    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:20px; }
+    h1 { margin:0 0 5px; font:700 clamp(2rem,5vw,3.35rem)/1 Georgia,serif; }
+    h2 { margin:0; font:700 1.25rem/1.2 Georgia,serif; }
+    p { margin-top:0; }
+    .subtitle,.fine { color:var(--muted); }
+    .subtitle { margin-bottom:0; }
+    .header-actions { display:flex; gap:8px; }
+    .button { padding:9px 13px; border:1px solid var(--line); border-radius:9px; background:#37312b; text-decoration:none; }
+    .button:hover { border-color:var(--gold); }
+    .summary { display:grid; grid-template-columns:repeat(4,1fr); gap:9px; margin-bottom:14px; }
+    .stat,.panel { border:1px solid var(--line); background:rgb(39 35 31 / 94%); box-shadow:0 18px 55px rgb(0 0 0 / 18%); }
+    .stat { padding:13px 15px; border-radius:10px; }
+    .stat span { display:block; color:var(--muted); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; }
+    .stat strong { display:block; margin-top:2px; font:700 1.55rem Georgia,serif; }
+    .layout { display:grid; grid-template-columns:minmax(330px,.86fr) minmax(480px,1.45fr); gap:14px; align-items:start; }
+    .panel { border-radius:13px; overflow:hidden; }
+    .panel-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:15px 17px; border-bottom:1px solid var(--line); background:var(--panel2); }
+    .panel-body { padding:16px; }
+    .perk-list { display:grid; gap:9px; }
+    .perk { display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:start; padding:11px; border:1px solid #403a34; border-radius:10px; background:#211e1b; }
+    .perk.active { border-color:rgb(215 173 89 / 65%); background:rgb(215 173 89 / 7%); }
+    .boxes { display:flex; gap:5px; padding-top:2px; }
+    .perk-box { width:24px; height:24px; padding:0; border:2px solid #776d62; border-radius:4px; background:#171513; }
+    .perk-box.checked { border-color:var(--gold); background:var(--gold); box-shadow:inset 0 0 0 4px #28231e; }
+    .perk-title { font-weight:650; }
+    .perk-detail { color:var(--muted); font-size:.82rem; margin-top:2px; }
+    .controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:9px; margin-bottom:12px; }
+    .control { padding:10px 11px; border:1px solid #403a34; border-radius:9px; background:#211e1b; }
+    .control label { display:flex; justify-content:space-between; align-items:center; gap:10px; }
+    input[type="number"] { width:62px; padding:7px; color:var(--ink); border:1px solid var(--line); border-radius:7px; background:#151311; text-align:center; }
+    input[type="checkbox"] { width:19px; height:19px; accent-color:var(--gold); }
+    .chart { height:310px; display:grid; grid-template-columns:repeat(9,minmax(34px,1fr)); gap:7px; align-items:end; padding:25px 4px 0; border-bottom:1px solid var(--line); background:repeating-linear-gradient(to top,transparent 0,transparent 24.7%,rgb(255 255 255 / 6%) 25%,transparent 25.3%); }
+    .column { height:100%; display:grid; grid-template-rows:24px 1fr 27px; min-width:0; text-align:center; }
+    .probability { color:var(--ink); font-size:.78rem; font-variant-numeric:tabular-nums; }
+    .bar-space { display:flex; align-items:end; justify-content:center; position:relative; }
+    .bar { width:min(48px,78%); min-height:0; border-radius:6px 6px 0 0; background:linear-gradient(#e2bd6e,#ad7740); transition:height .22s ease; position:relative; }
+    .bar.null { background:linear-gradient(#8a514a,#653a35); }
+    .bar.double { background:linear-gradient(#8eaa7e,#5e7b57); }
+    .baseline { position:absolute; width:88%; height:2px; background:#eee1cb; opacity:.56; transform:translateY(1px); }
+    .axis-label { padding-top:6px; color:var(--muted); font-weight:700; white-space:nowrap; }
+    .legend { display:flex; flex-wrap:wrap; gap:12px; margin-top:11px; color:var(--muted); font-size:.8rem; }
+    .key { display:inline-flex; align-items:center; gap:6px; }
+    .swatch { width:18px; height:8px; border-radius:3px; background:var(--gold); }
+    .swatch.line { height:2px; background:#eee1cb; }
+    .effects { display:grid; gap:10px; }
+    .effect { display:grid; grid-template-columns:minmax(155px,1fr) minmax(130px,1.25fr) 58px; gap:10px; align-items:center; }
+    .effect-label small { display:block; color:var(--muted); }
+    .effect-track { height:12px; overflow:hidden; border-radius:99px; background:#171513; border:1px solid #3e3832; }
+    .effect-fill { height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--rust),var(--gold)); transition:width .22s ease; }
+    .effect-value { text-align:right; font-variant-numeric:tabular-nums; }
+    .section-gap { margin-top:14px; }
+    .deck-list { display:flex; flex-wrap:wrap; gap:7px; }
+    .chip { padding:5px 8px; border:1px solid #494139; border-radius:99px; color:var(--muted); background:#1b1816; font-size:.8rem; }
+    .chip strong { color:var(--ink); }
+    .notice { margin:12px 0 0; padding:10px 12px; border-left:3px solid var(--green); background:rgb(119 150 111 / 10%); color:var(--muted); font-size:.84rem; }
+    .fine { margin:14px 3px 0; font-size:.82rem; }
+    @media (max-width:860px) { .layout{grid-template-columns:1fr}.summary{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width:560px) { .shell{width:min(100% - 16px,540px);padding-top:23px} header{align-items:stretch;flex-direction:column}.header-actions{align-self:start}.controls{grid-template-columns:1fr}.chart{gap:3px;height:270px}.axis-label,.probability{font-size:.68rem}.effect{grid-template-columns:1fr 52px}.effect-track{grid-column:1/-1;grid-row:2}.effect-value{grid-column:2;grid-row:1}.panel-body{padding:12px} }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header>
+      <div><h1>Attack Modifier Lab</h1><p class="subtitle">Wildfury · Gloomhaven Second Edition</p></div>
+      <div class="header-actions"><a class="button" href="index.html">Exhaustion planner</a><button class="button" id="reset">Reset</button></div>
+    </header>
+
+    <section class="summary" aria-label="Deck summary">
+      <div class="stat"><span>Physical deck</span><strong id="deckSize">20 cards</strong></div>
+      <div class="stat"><span>Terminal cards</span><strong id="terminalSize">20</strong></div>
+      <div class="stat"><span>Expected attack</span><strong id="expectedAttack">—</strong></div>
+      <div class="stat"><span>Rolling effect</span><strong id="rollingChance">0%</strong></div>
+    </section>
+
+    <div class="layout">
+      <section class="panel">
+        <div class="panel-head"><h2>Perks</h2><span class="fine" id="perkCount">0 selected</span></div>
+        <div class="panel-body">
+          <div class="perk-list" id="perkList"></div>
+          <div class="notice">A checked box means that perk has been applied once. Repeated perks use one box per copy, just like the character sheet.</div>
+        </div>
+      </section>
+
+      <div>
+        <section class="panel">
+          <div class="panel-head"><h2>Numeric result</h2><span class="fine">one normal attack draw</span></div>
+          <div class="panel-body">
+            <div class="controls">
+              <div class="control"><label for="baseAttack">Base Attack <input id="baseAttack" type="number" min="0" max="30" value="3"></label></div>
+              <div class="control"><label for="closeToBear">Within Range 4 of bear <input id="closeToBear" type="checkbox"></label></div>
+              <div class="control"><label for="blesses">Bless cards <input id="blesses" type="number" min="0" max="10" value="0"></label></div>
+              <div class="control"><label for="curses">Curse cards <input id="curses" type="number" min="0" max="10" value="0"></label></div>
+              <div class="control"><label for="scenarioMinus">Scenario-added −1s <input id="scenarioMinus" type="number" min="0" max="10" value="0"></label></div>
+            </div>
+            <div class="chart" id="numericChart" aria-label="Probability by attack modifier"></div>
+            <div class="legend"><span class="key"><span class="swatch"></span>Current deck</span><span class="key"><span class="swatch line"></span>Unperked 20-card deck</span></div>
+            <p class="fine">×2 is shown separately because it is not an additive modifier. “Expected attack” applies every card to the selected base Attack, floors negative results at zero, and is before Shield and Ward.</p>
+          </div>
+        </section>
+
+        <section class="panel section-gap">
+          <div class="panel-head"><h2>Added effects</h2><span class="fine">chance of occurring at least once</span></div>
+          <div class="panel-body">
+            <div class="effects" id="effectChart"></div>
+            <div class="section-gap"><h2>Deck contents</h2><div class="deck-list section-gap" id="deckList"></div></div>
+            <p class="fine">Rolling cards are drawn until a non-rolling card appears. The rolling Heal 2 + Ward card therefore does not create a separate +0 result; the terminal card still determines the numeric modifier. Air/Earth cards let you choose which one to infuse.</p>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    (() => {
+      const perks = [
+        { id:'healWard', max:3, title:'Replace one −1 with one rolling Heal 2 + Ward bear', detail:'No numeric modifier; draw until a terminal card.' },
+        { id:'wound', max:3, title:'Replace one +0 with one +1 Wound', detail:'The Wound is applied even if the attack deals no damage.' },
+        { id:'closeBonus', max:2, title:'Replace one +0 with one conditional +2 / +3', detail:'Adds another +1 while Wildfury and bear are within Range 4.' },
+        { id:'plusFour', max:1, title:'Replace the +2 with one +4', detail:'A direct two-point upgrade without changing deck size.' },
+        { id:'elements', max:2, title:'Add two +1 Air-or-Earth cards', detail:'Each marked box adds two cards; choose one element when drawn.' },
+        { id:'push', max:2, title:'Add one +2 Push 2', detail:'One card is added for each marked box.' },
+        { id:'scenario', max:1, title:'Ignore scenario effects; add +1 Safeguard + Ward 1 ally', detail:'The added card affects both the numeric and effect charts.' }
+      ];
+      const state = { perks:{}, baseAttack:3, closeToBear:false, blesses:0, curses:0, scenarioMinus:0 };
+      const ids = ['baseAttack','closeToBear','blesses','curses','scenarioMinus'];
+      const labels = [
+        ['null','Null'], ['-2','−2'], ['-1','−1'], ['0','0'], ['1','+1'],
+        ['2','+2'], ['3','+3'], ['4','+4'], ['x2','×2']
+      ];
+      const baseProbabilities = { null:1/20, '-2':1/20, '-1':5/20, '0':6/20, '1':5/20, '2':1/20, '3':0, '4':0, x2:1/20 };
+      const perkList = document.querySelector('#perkList');
+
+      function clamp(value,min,max) { return Math.max(min,Math.min(max,Number(value)||0)); }
+      function percent(value) { return `${(value*100).toFixed(value > 0 && value < .01 ? 1 : 1)}%`; }
+      function save() { localStorage.setItem('wildfury-amd-state',JSON.stringify(state)); }
+      function load() {
+        try { Object.assign(state,JSON.parse(localStorage.getItem('wildfury-amd-state'))||{}); }
+        catch (_) { /* Keep defaults if stored data is invalid. */ }
+        state.perks ||= {};
+      }
+
+      function renderPerks() {
+        perkList.innerHTML = perks.map(perk => {
+          const count = clamp(state.perks[perk.id],0,perk.max);
+          const boxes = Array.from({length:perk.max},(_,i) => `<button class="perk-box ${i<count?'checked':''}" data-perk="${perk.id}" data-index="${i}" aria-label="${perk.title}, copy ${i+1}" aria-pressed="${i<count}"></button>`).join('');
+          return `<div class="perk ${count?'active':''}"><div class="boxes">${boxes}</div><div><div class="perk-title">${perk.title}</div><div class="perk-detail">${perk.detail}</div></div></div>`;
+        }).join('');
+        perkList.querySelectorAll('[data-perk]').forEach(button => button.addEventListener('click',event => {
+          const {perk,index} = event.currentTarget.dataset;
+          const clicked = Number(index)+1;
+          state.perks[perk] = clamp(state.perks[perk],0,10) === clicked ? clicked-1 : clicked;
+          render();
+        }));
+      }
+
+      function buildDeck() {
+        const p = id => clamp(state.perks[id],0,perks.find(perk=>perk.id===id).max);
+        const cards = { null:1+state.curses, '-2':1, '-1':5, '0':6, '1':5, '2':1, '3':0, '4':0, x2:1+state.blesses };
+        const effects = { rollingHealWard:0, wound:0, elements:0, push:0, ally:0, closeBonus:0 };
+        cards['-1'] -= p('healWard');
+        effects.rollingHealWard = p('healWard');
+        cards['0'] -= p('wound'); cards['1'] += p('wound'); effects.wound = p('wound');
+        cards['0'] -= p('closeBonus');
+        cards[state.closeToBear?'3':'2'] += p('closeBonus');
+        effects.closeBonus = state.closeToBear ? p('closeBonus') : 0;
+        if (p('plusFour')) { cards['2'] -= 1; cards['4'] += 1; }
+        cards['1'] += p('elements')*2; effects.elements = p('elements')*2;
+        cards['2'] += p('push'); effects.push = p('push');
+        if (p('scenario')) { cards['1'] += 1; effects.ally = 1; }
+        if (!p('scenario')) cards['-1'] += state.scenarioMinus;
+        return { cards, effects, rolling:effects.rollingHealWard };
+      }
+
+      function renderNumeric(deck) {
+        const terminal = Object.values(deck.cards).reduce((a,b)=>a+b,0);
+        const maxProbability = Math.max(.30,...Object.values(deck.cards).map(count=>count/terminal));
+        document.querySelector('#numericChart').innerHTML = labels.map(([key,label]) => {
+          const probability = deck.cards[key]/terminal;
+          const baseline = baseProbabilities[key]/maxProbability*100;
+          const height = probability/maxProbability*100;
+          const special = key==='null'?'null':key==='x2'?'double':'';
+          return `<div class="column" title="${deck.cards[key]} of ${terminal} terminal cards"><div class="probability">${percent(probability)}</div><div class="bar-space"><div class="baseline" style="bottom:${baseline}%"></div><div class="bar ${special}" style="height:${height}%"></div></div><div class="axis-label">${label}</div></div>`;
+        }).join('');
+      }
+
+      function renderEffects(deck) {
+        const terminal = Object.values(deck.cards).reduce((a,b)=>a+b,0);
+        const rollingProbability = deck.rolling/(terminal+deck.rolling);
+        const rows = [
+          ['Heal 2 + Ward bear','rolling modifier',rollingProbability],
+          ['Wound','terminal +1 card',deck.effects.wound/terminal],
+          ['Air or Earth','choose one infusion',deck.effects.elements/terminal],
+          ['Push 2','terminal +2 card',deck.effects.push/terminal],
+          ['Safeguard + Ward ally','terminal +1 card',deck.effects.ally/terminal],
+          ['Range-4 bonus','conditional +1 applied',deck.effects.closeBonus/terminal]
+        ];
+        document.querySelector('#effectChart').innerHTML = rows.map(([name,detail,probability]) => `<div class="effect"><div class="effect-label">${name}<small>${detail}</small></div><div class="effect-track"><div class="effect-fill" style="width:${probability*100}%"></div></div><div class="effect-value">${percent(probability)}</div></div>`).join('');
+      }
+
+      function expectedAttack(cards,terminal) {
+        const attack = state.baseAttack;
+        return Object.entries(cards).reduce((sum,[key,count]) => {
+          const result = key==='null' ? 0 : key==='x2' ? attack*2 : Math.max(0,attack+Number(key));
+          return sum + result*count/terminal;
+        },0);
+      }
+
+      function render() {
+        ids.forEach(id => {
+          const element = document.querySelector(`#${id}`);
+          if (element.type==='checkbox') element.checked=Boolean(state[id]); else element.value=state[id];
+        });
+        renderPerks();
+        const deck = buildDeck();
+        const terminal = Object.values(deck.cards).reduce((a,b)=>a+b,0);
+        const physical = terminal+deck.rolling;
+        renderNumeric(deck); renderEffects(deck);
+        document.querySelector('#deckSize').textContent=`${physical} cards`;
+        document.querySelector('#terminalSize').textContent=terminal;
+        document.querySelector('#expectedAttack').textContent=expectedAttack(deck.cards,terminal).toFixed(2);
+        document.querySelector('#rollingChance').textContent=percent(deck.rolling/physical);
+        document.querySelector('#perkCount').textContent=`${Object.values(state.perks).reduce((a,b)=>a+Number(b||0),0)} selected`;
+        document.querySelector('#deckList').innerHTML = labels.filter(([key])=>deck.cards[key]).map(([key,label])=>`<span class="chip"><strong>${deck.cards[key]}×</strong> ${label}</span>`).join('') + (deck.rolling?`<span class="chip"><strong>${deck.rolling}×</strong> rolling Heal/Ward</span>`:'');
+        document.querySelector('#scenarioMinus').disabled=Boolean(state.perks.scenario);
+        save();
+      }
+
+      load();
+      ids.forEach(id => document.querySelector(`#${id}`).addEventListener('input',event => {
+        if (event.target.type==='checkbox') state[id]=event.target.checked;
+        else state[id]=clamp(event.target.value,Number(event.target.min),Number(event.target.max));
+        render();
+      }));
+      document.querySelector('#reset').addEventListener('click',() => {
+        state.perks={}; state.baseAttack=3; state.closeToBear=false; state.blesses=0; state.curses=0; state.scenarioMinus=0; render();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
