@@ -3,197 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Gloomhaven Exhaustion Planner</title>
+  <title>Gloomhaven Tools</title>
   <style>
     :root { color-scheme: dark; --bg:#171513; --panel:#27231f; --line:#494139; --ink:#f1e7d5; --muted:#b4a896; --gold:#d5ad5b; --red:#bc4e3d; }
     * { box-sizing: border-box; }
     body { margin:0; min-height:100vh; color:var(--ink); background:radial-gradient(circle at 12% 0%,rgb(188 78 61 / 14%),transparent 34rem),linear-gradient(135deg,#151311,#211e1b 60%,#151311); font:16px/1.45 system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
-    button,input { font:inherit; }
-    .shell { width:min(1100px,calc(100% - 28px)); margin:auto; padding:40px 0 64px; }
-    header { display:flex; justify-content:space-between; align-items:end; gap:24px; margin-bottom:22px; }
-    h1 { margin:0 0 5px; font:700 clamp(2rem,5vw,3.4rem)/1 Georgia,serif; }
-    p { margin-top:0; }
-    .subtitle,.note { color:var(--muted); }
-    .subtitle { margin-bottom:0; }
-    .setup { display:flex; gap:9px; align-items:center; padding:8px; border:1px solid var(--line); border-radius:11px; background:var(--panel); }
-    .setup label { padding-left:5px; color:var(--muted); white-space:nowrap; }
-    input[type="number"] { width:64px; padding:8px; color:var(--ink); border:1px solid var(--line); border-radius:8px; background:var(--bg); text-align:center; }
-    button { padding:9px 14px; color:var(--ink); border:1px solid var(--line); border-radius:8px; background:#37312b; cursor:pointer; }
-    button:hover { border-color:var(--gold); }
-    .app-link { padding:9px 12px; color:var(--ink); border:1px solid var(--line); border-radius:8px; background:#37312b; text-decoration:none; white-space:nowrap; }
-    .app-link:hover { border-color:var(--gold); }
-    .summary { display:grid; grid-template-columns:repeat(6,1fr); gap:9px; margin-bottom:16px; }
-    .stat { padding:13px 15px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
-    .stat span { display:block; color:var(--muted); font-size:.73rem; letter-spacing:.08em; text-transform:uppercase; }
-    .stat strong { display:block; margin-top:2px; font:700 1.55rem Georgia,serif; }
-    .table-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:13px; background:var(--panel); box-shadow:0 22px 60px rgb(0 0 0 / 25%); }
-    table { width:100%; border-collapse:collapse; }
-    th { padding:11px 13px; color:var(--muted); background:#1d1a17; font-size:.74rem; text-align:left; text-transform:uppercase; letter-spacing:.07em; }
-    td { padding:12px 13px; border-top:1px solid var(--line); vertical-align:middle; }
-    tbody tr:hover { background:rgb(213 173 91 / 4%); }
-    tbody tr.rest-row { background:rgb(73 112 77 / 32%); }
-    tbody tr.rest-row:hover { background:rgb(73 112 77 / 43%); }
-    tbody tr.rest-row td:first-child { box-shadow:inset 5px 0 #79a47b; }
-    tbody tr.exhaust-row:not(.rest-row) { background:rgb(150 58 47 / 17%); }
-    .number { width:72px; font-weight:700; }
-    .cards { width:92px; font-variant-numeric:tabular-nums; }
-    .toggle-cell { width:120px; }
-    .toggle { display:inline-flex; align-items:center; gap:8px; cursor:pointer; user-select:none; }
-    .toggle input,.release input { width:18px; height:18px; accent-color:var(--red); }
-    .toggle.persistent input,.release input { accent-color:var(--gold); }
-    .result { min-width:275px; }
-    .result-main { font-weight:650; }
-    .detail { margin-top:3px; color:var(--muted); font-size:.86rem; }
-    .rest { color:#bad4b8; }
-    .exhaust { color:#f3ada1; }
-    .release-box { margin-top:9px; padding:9px 11px; border-left:3px solid var(--gold); background:rgb(213 173 91 / 7%); }
-    .release-title { margin-bottom:6px; color:var(--gold); font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; }
-    .release-list { display:flex; flex-wrap:wrap; gap:7px 14px; }
-    .release { display:inline-flex; gap:6px; align-items:center; font-size:.88rem; cursor:pointer; }
-    .legend { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
-    .info { padding:15px 17px; border:1px solid var(--line); border-radius:10px; background:rgb(39 35 31 / 76%); }
-    .info strong { color:var(--gold); }
-    .info p:last-child { margin-bottom:0; }
-    @media (max-width:720px) { .shell{width:min(100% - 16px,680px);padding-top:24px} header{align-items:stretch;flex-direction:column}.setup{align-self:start}.summary{grid-template-columns:repeat(2,1fr)}.stat:first-child{grid-column:1/-1}.legend{grid-template-columns:1fr}th,td{padding:10px 9px} }
+    .shell { width:min(760px,calc(100% - 28px)); margin:auto; padding:64px 0; }
+    h1 { margin:0 0 6px; font:700 clamp(2.2rem,6vw,3.6rem)/1 Georgia,serif; }
+    .subtitle { margin:0 0 34px; color:var(--muted); font-size:1.05rem; }
+    .cards { display:grid; gap:16px; }
+    a.card { display:block; padding:22px 24px; color:var(--ink); text-decoration:none; border:1px solid var(--line); border-radius:13px; background:var(--panel); box-shadow:0 22px 60px rgb(0 0 0 / 25%); transition:border-color .15s, transform .15s; }
+    a.card:hover { border-color:var(--gold); transform:translateY(-2px); }
+    a.card h2 { margin:0 0 5px; font:650 1.4rem Georgia,serif; color:var(--gold); }
+    a.card p { margin:0; color:var(--muted); }
+    footer { margin-top:40px; color:var(--muted); font-size:.85rem; }
   </style>
 </head>
 <body>
   <main class="shell">
-    <header>
-      <div><h1>Exhaustion Planner</h1><p class="subtitle">A round-by-round short-rest projection.</p></div>
-      <div class="setup"><a class="app-link" href="attack-modifier.html">Attack modifier lab</a><label for="handSize">Starting hand</label><input id="handSize" type="number" min="2" max="30" value="10"><button id="reset">Reset</button></div>
-    </header>
+    <h1>Gloomhaven Tools</h1>
+    <p class="subtitle">A small pile of helpers for Gloomhaven Second Edition.</p>
 
-    <section class="summary" aria-label="Simulation result">
-      <div class="stat"><span>Rounds</span><strong id="rounds">—</strong></div>
-      <div class="stat"><span>Short rests</span><strong id="rests">—</strong></div>
-      <div class="stat"><span>Losses played</span><strong id="losses">—</strong></div>
-      <div class="stat"><span>Damage losses</span><strong id="damageLosses">—</strong></div>
-      <div class="stat"><span>Active at end</span><strong id="active">—</strong></div>
-      <div class="stat"><span>Total lost</span><strong id="lost">—</strong></div>
-    </section>
-
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Round</th><th>Hand (start → end)</th><th>Play a loss</th><th>Play a persistent</th><th>Negate damage</th><th>After the round</th></tr></thead>
-        <tbody id="roundRows"></tbody>
-      </table>
+    <div class="cards">
+      <a class="card" href="exhaustion-planner.html">
+        <h2>Exhaustion Planner</h2>
+        <p>Round-by-round short-rest projection — see when a character runs out of cards.</p>
+      </a>
+      <a class="card" href="attack-modifier.html">
+        <h2>Attack Modifier Lab</h2>
+        <p>Explore the Wildfury attack modifier deck and how tweaks change the odds.</p>
+      </a>
     </div>
 
-    <section class="legend">
-      <div class="info"><p><strong>Each row represents two played cards.</strong> Neither play box means two normal discards. One means one special card plus one normal discard; both mean one loss and one persistent card. Negating damage loses one additional card from hand.</p></div>
-      <div class="info"><p><strong>Short rests happen automatically when fewer than two cards remain in hand.</strong> At a rest, choose whether each active non-loss persistent card stays active or returns to the discard pile before one random card is lost.</p></div>
-    </section>
-    <p class="note">The Hand column shows start-of-round → end-of-round hand size, after any short rest. A character exhausts at the start of a round when they have fewer than two cards to play and fewer than two cards available to rest. This models card exhaustion only. The damage control represents losing one card from hand; the alternative of losing two discarded cards is not modeled. Long rests, recovery abilities, and the optional 1-damage short-rest redraw are also omitted.</p>
+    <footer>Built for the table. No accounts, no tracking — just cards and math.</footer>
   </main>
-
-  <script>
-    (() => {
-      const handInput = document.querySelector('#handSize');
-      const rowsElement = document.querySelector('#roundRows');
-      const fields = {
-        rounds: document.querySelector('#rounds'), rests: document.querySelector('#rests'),
-        losses: document.querySelector('#losses'), damageLosses: document.querySelector('#damageLosses'),
-        active: document.querySelector('#active'), lost: document.querySelector('#lost')
-      };
-      let choices = {};
-      let releases = {};
-      const roundChoice = round => choices[round] || { loss:false, persistent:false, negate:false };
-      const releaseKey = (restRound, sourceRound) => `${restRound}:${sourceRound}`;
-
-      function simulate() {
-        const startingHand = Math.max(2,Math.min(30,Number(handInput.value)||10));
-        handInput.value = startingHand;
-        let hand=startingHand, discard=0, lost=0, rests=0, lossesPlayed=0, damageLosses=0, active=[];
-        const rounds=[];
-        for (let round=1; round<=250; round+=1) {
-          if (hand<2) break;
-          const startHand=hand;
-          const requested=roundChoice(round);
-          const selected={...requested,negate:requested.negate&&startHand>=3};
-          const lossCount=selected.loss?1:0;
-          const persistentCount=selected.persistent?1:0;
-          const normalCount=2-lossCount-persistentCount;
-          hand-=2;
-          if (selected.negate) {
-            hand-=1;
-            lost+=1;
-            damageLosses+=1;
-          }
-          discard+=normalCount;
-          lost+=lossCount;
-          lossesPlayed+=lossCount;
-          if (persistentCount) active.push(round);
-          const record={round,startHand,selected,handAfterPlay:hand,discardAfterPlay:discard,activeBeforeRest:[...active],rested:false,exhausted:false,released:[],handAfterRest:hand};
-          if (hand<2) {
-            const released=active.filter(sourceRound=>releases[releaseKey(round,sourceRound)]);
-            discard+=released.length;
-            active=active.filter(sourceRound=>!released.includes(sourceRound));
-            record.released=released;
-            if (discard>=2) {
-              discard-=1;
-              lost+=1;
-              hand+=discard;
-              discard=0;
-              rests+=1;
-              record.rested=true;
-              record.handAfterRest=hand;
-              if (hand<2) record.exhausted=true;
-            } else record.exhausted=true;
-          }
-          rounds.push(record);
-          if (record.exhausted) break;
-        }
-        return {rounds,rests,lossesPlayed,damageLosses,active,lost};
-      }
-
-      function resultMarkup(record) {
-        if (record.rested) {
-          const released=record.released.length?` Released persistent ${record.released.map(round=>`R${round}`).join(', ')}.`:'';
-          const ending=record.exhausted?` <span class="exhaust">Exhausts at the start of round ${record.round+1} with ${record.handAfterRest} card${record.handAfterRest===1?'':'s'} in hand.</span>`:'';
-          return `<div class="result-main rest">Short rest → ${record.handAfterRest} card${record.handAfterRest===1?'':'s'} in hand</div><div class="detail">One discarded card lost.${released} Remaining discards returned.${ending}</div>`;
-        }
-        if (record.exhausted) return `<div class="result-main exhaust">Exhausts at the start of round ${record.round+1}</div><div class="detail">Only ${record.handAfterPlay} card${record.handAfterPlay===1?'':'s'} in hand and fewer than two cards available to rest.</div>`;
-        return `<div class="result-main">${record.handAfterPlay} hand · ${record.discardAfterPlay} discard · ${record.activeBeforeRest.length} active</div>`;
-      }
-
-      function releaseMarkup(record) {
-        if (record.handAfterPlay>=2||!record.activeBeforeRest.length) return '';
-        return `<div class="release-box"><div class="release-title">At this rest: return to discard?</div><div class="release-list">${record.activeBeforeRest.map(sourceRound=>{
-          const key=releaseKey(record.round,sourceRound);
-          return `<label class="release"><input type="checkbox" data-release="${key}" ${releases[key]?'checked':''}>Persistent from R${sourceRound}</label>`;
-        }).join('')}</div></div>`;
-      }
-
-      function render() {
-        const result=simulate();
-        rowsElement.innerHTML=result.rounds.map(record=>`<tr class="${record.rested?'rest-row ':''}${record.exhausted?'exhaust-row':''}">
-          <td class="number">${record.round}</td><td class="cards">${record.startHand} → ${record.rested?record.handAfterRest:record.handAfterPlay}</td>
-          <td class="toggle-cell"><label class="toggle"><input type="checkbox" data-round="${record.round}" data-kind="loss" ${record.selected.loss?'checked':''}>Loss</label></td>
-          <td class="toggle-cell"><label class="toggle persistent"><input type="checkbox" data-round="${record.round}" data-kind="persistent" ${record.selected.persistent?'checked':''}>Persistent</label></td>
-          <td class="toggle-cell"><label class="toggle"><input type="checkbox" data-round="${record.round}" data-kind="negate" ${record.selected.negate?'checked':''} ${record.startHand<3?'disabled title="No unplayed card remains in hand"':''}>Lose 1 card</label></td>
-          <td class="result">${resultMarkup(record)}${releaseMarkup(record)}</td></tr>`).join('');
-        fields.rounds.textContent=result.rounds.length;
-        fields.rests.textContent=result.rests;
-        fields.losses.textContent=result.lossesPlayed;
-        fields.damageLosses.textContent=result.damageLosses;
-        fields.active.textContent=result.active.length;
-        fields.lost.textContent=result.lost;
-        rowsElement.querySelectorAll('[data-round]').forEach(input=>input.addEventListener('change',event=>{
-          const round=Number(event.target.dataset.round);
-          choices[round]={...roundChoice(round),[event.target.dataset.kind]:event.target.checked};
-          render();
-        }));
-        rowsElement.querySelectorAll('[data-release]').forEach(input=>input.addEventListener('change',event=>{
-          releases[event.target.dataset.release]=event.target.checked;
-          render();
-        }));
-      }
-
-      document.querySelector('#reset').addEventListener('click',()=>{choices={};releases={};render()});
-      handInput.addEventListener('change',()=>{choices={};releases={};render()});
-      render();
-    })();
-  </script>
 </body>
 </html>
