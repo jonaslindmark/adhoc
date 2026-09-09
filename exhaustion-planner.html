@@ -61,7 +61,7 @@
   <main class="shell">
     <header>
       <div><h1>Exhaustion Planner</h1><p class="subtitle">A round-by-round short-rest projection.</p></div>
-      <div class="setup"><a class="app-link" href="attack-modifier.html">Attack modifier lab</a><label for="handSize">Starting hand</label><input id="handSize" type="number" min="2" max="30" value="10"><button id="reset">Reset</button></div>
+      <div class="setup"><a class="app-link" href="attack-modifier.html">Attack modifier lab</a><label for="handSize">Starting hand</label><input id="handSize" type="number" min="2" max="30" value="10"><label for="startDiscard" title="Cards a scenario effect places in your discard pile before round 1">Start discarded</label><input id="startDiscard" type="number" min="0" max="28" value="0"><label for="startLost" title="Cards a scenario effect removes to your lost pile before round 1">Start lost</label><input id="startLost" type="number" min="0" max="28" value="0"><button id="reset">Reset</button></div>
     </header>
 
     <section class="summary" aria-label="Simulation result">
@@ -84,12 +84,14 @@
       <div class="info"><p><strong>Each row represents two played cards.</strong> Neither play box means two normal discards. One means one special card plus one normal discard; both mean one loss and one persistent card. Negating damage loses one additional card from hand.</p></div>
       <div class="info"><p><strong>Short rests happen automatically when fewer than two cards remain in hand.</strong> At a rest, choose whether each active non-loss persistent card stays active or returns to the discard pile before one random card is lost.</p></div>
     </section>
-    <p class="note">The Hand column shows start-of-round → end-of-round hand size, after any short rest. A character exhausts at the start of a round when they have fewer than two cards to play and fewer than two cards available to rest. This models card exhaustion only. The damage control represents losing one card from hand; the alternative of losing two discarded cards is not modeled. Long rests, recovery abilities, and the optional 1-damage short-rest redraw are also omitted.</p>
+    <p class="note"><strong>Start discarded</strong> and <strong>Start lost</strong> model scenario effects that place cards in your discard pile or remove them to your lost pile before round 1; both are drawn from your starting hand, and start-lost cards count toward Total lost. The Hand column shows start-of-round → end-of-round hand size, after any short rest. A character exhausts at the start of a round when they have fewer than two cards to play and fewer than two cards available to rest. This models card exhaustion only. The damage control represents losing one card from hand; the alternative of losing two discarded cards is not modeled. Long rests, recovery abilities, and the optional 1-damage short-rest redraw are also omitted.</p>
   </main>
 
   <script>
     (() => {
       const handInput = document.querySelector('#handSize');
+      const startDiscardInput = document.querySelector('#startDiscard');
+      const startLostInput = document.querySelector('#startLost');
       const rowsElement = document.querySelector('#roundRows');
       const fields = {
         rounds: document.querySelector('#rounds'), rests: document.querySelector('#rests'),
@@ -104,7 +106,11 @@
       function simulate() {
         const startingHand = Math.max(2,Math.min(30,Number(handInput.value)||10));
         handInput.value = startingHand;
-        let hand=startingHand, discard=0, lost=0, rests=0, lossesPlayed=0, damageLosses=0, active=[];
+        const startLost = Math.max(0,Math.min(startingHand,Math.floor(Number(startLostInput.value)||0)));
+        const startDiscard = Math.max(0,Math.min(startingHand-startLost,Math.floor(Number(startDiscardInput.value)||0)));
+        startLostInput.value = startLost;
+        startDiscardInput.value = startDiscard;
+        let hand=startingHand-startDiscard-startLost, discard=startDiscard, lost=startLost, rests=0, lossesPlayed=0, damageLosses=0, active=[];
         const rounds=[];
         for (let round=1; round<=250; round+=1) {
           if (hand<2) break;
@@ -190,8 +196,8 @@
         }));
       }
 
-      document.querySelector('#reset').addEventListener('click',()=>{choices={};releases={};render()});
-      handInput.addEventListener('change',()=>{choices={};releases={};render()});
+      document.querySelector('#reset').addEventListener('click',()=>{choices={};releases={};startDiscardInput.value=0;startLostInput.value=0;render()});
+      [handInput,startDiscardInput,startLostInput].forEach(input=>input.addEventListener('change',()=>{choices={};releases={};render()}));
       render();
     })();
   </script>
